@@ -32,7 +32,7 @@ USO
 REQUIREMENTS
 ============
 
-* BeautifulSoup
+* BeautifulSoup4
 
 LICENSE
 =======

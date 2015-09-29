@@ -8,7 +8,8 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), 'data')
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-        self.c = Correios(proxy='http://87.254.212.121:8080')
+        self.c = Correios()
+        # self.c = Correios(proxy='http://87.254.212.121:8080')
 
     def test_resultado_cep_conhecido(self):
         r = self.c.consulta('91370000', primeiro=True)
@@ -29,7 +30,7 @@ class TestIntegration(unittest.TestCase):
                             tipo='Rua',
                             numero=54)
 
-        self.assertEquals(len(r), 3)
+        self.assertEquals(len(r), 4)
         self.assertEquals(r[1]['CEP'], '91370-000')
 
     def test_resultados_faixa(self):

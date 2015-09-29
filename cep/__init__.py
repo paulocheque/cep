@@ -1,5 +1,5 @@
 #- coding: utf-8
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import cookielib
 import re
 import urllib
@@ -32,10 +32,10 @@ class Correios():
         return handle
 
     def _parse_detalhe(self, html):
-        soup = BeautifulSoup(html.decode('ISO-8859-1'))
+        soup = BeautifulSoup(html.decode('ISO-8859-1'), "html.parser")
 
-        value_cells = soup.findAll('td', attrs={'class': 'value'})
-        values = [cell.firstText(text=True) for cell in value_cells]
+        value_cells = soup.find_all('td', attrs={'class': 'value'})
+        values = [cell.get_text() for cell in value_cells]
         localidade, uf = values[2].split('/')
         values_dict = {
             'Logradouro': values[0],
@@ -47,13 +47,13 @@ class Correios():
         return values_dict
 
     def _parse_linha_tabela(self, tr):
-        values = [cell.firstText(text=True) for cell in tr.findAll('td')]
+        values = [cell.get_text() for cell in tr.find_all('td')]
         keys = ['Logradouro', 'Bairro', 'Localidade', 'UF', 'CEP']
         return dict(zip(keys, values))
 
     def _parse_tabela(self, html):
-        soup = BeautifulSoup(html)
-        linhas = soup.findAll('tr', attrs={
+        soup = BeautifulSoup(html, "html.parser")
+        linhas = soup.find_all('tr', attrs={
             'onclick': re.compile(r"javascript:detalharCep\('\d+','\d+'\);")
         })
         return [self._parse_linha_tabela(linha) for linha in linhas]
