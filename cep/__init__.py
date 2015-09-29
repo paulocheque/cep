@@ -26,13 +26,13 @@ class Correios():
         encoded_data = urllib.parse.urlencode(data) if data else None
         url = URL_CORREIOS + url
 
-        req = urllib.request.Request(url, encoded_data, headers)
+        req = urllib.request.Request(url, bytes(encoded_data, encoding='ISO-8859-1'), headers)
         handle = urllib.request.urlopen(req)
 
         return handle
 
-    def _parse_detalhe(self, html):
-        soup = BeautifulSoup(html.decode('ISO-8859-1'), "html.parser")
+    def _parse_detalhe(self, html_as_bytes):
+        soup = BeautifulSoup(html_as_bytes.decode('ISO-8859-1'), "html.parser")
 
         value_cells = soup.find_all('td', attrs={'class': 'value'})
         values = [cell.get_text() for cell in value_cells]
@@ -58,10 +58,10 @@ class Correios():
         })
         return [self._parse_linha_tabela(linha) for linha in linhas]
 
-    def _parse_faixa(self, html):
-        if "não está cadastrada" in html.decode('cp1252'):
+    def _parse_faixa(self, html_as_bytes):
+        if "não está cadastrada" in html_as_bytes.decode('cp1252'):
             return None
-        ceps = re.findall('\d{5}-\d{3}', html)
+        ceps = re.findall(b'\d{5}-\d{3}', html_as_bytes)
         if len(ceps) == 4 or len(ceps) == 6: #uf (+ uf) + cidade com range
             return tuple(ceps[-2:])
         elif len(ceps) == 3 or len(ceps) == 5: #uf (+ uf) + cidade com cep único
