@@ -1,33 +1,33 @@
 #- coding: utf-8
 from bs4 import BeautifulSoup
-import cookielib
+import http.cookiejar
 import re
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 URL_CORREIOS = 'http://www.buscacep.correios.com.br/servicos/dnec/'
 
 class Correios():
     def __init__(self, proxy=None):
-        cj = cookielib.LWPCookieJar()
-        cookie_handler = urllib2.HTTPCookieProcessor(cj)
+        cj = http.cookiejar.LWPCookieJar()
+        cookie_handler = urllib.request.HTTPCookieProcessor(cj)
         if proxy:
-            proxy_handler = urllib2.ProxyHandler({'http': proxy})
-            opener = urllib2.build_opener(proxy_handler, cookie_handler)
+            proxy_handler = urllib.request.ProxyHandler({'http': proxy})
+            opener = urllib.request.build_opener(proxy_handler, cookie_handler)
         else:
-            opener = urllib2.build_opener(cookie_handler)
-        urllib2.install_opener(opener)
+            opener = urllib.request.build_opener(cookie_handler)
+        urllib.request.install_opener(opener)
 
     def _url_open(self, url, data=None, headers=None):
         if headers == None:
             headers = {}
 
         headers['User-agent'] = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-        encoded_data = urllib.urlencode(data) if data else None
+        encoded_data = urllib.parse.urlencode(data) if data else None
         url = URL_CORREIOS + url
 
-        req = urllib2.Request(url, encoded_data, headers)
-        handle = urllib2.urlopen(req)
+        req = urllib.request.Request(url, encoded_data, headers)
+        handle = urllib.request.urlopen(req)
 
         return handle
 
@@ -49,7 +49,7 @@ class Correios():
     def _parse_linha_tabela(self, tr):
         values = [cell.get_text() for cell in tr.find_all('td')]
         keys = ['Logradouro', 'Bairro', 'Localidade', 'UF', 'CEP']
-        return dict(zip(keys, values))
+        return dict(list(zip(keys, values)))
 
     def _parse_tabela(self, html):
         soup = BeautifulSoup(html, "html.parser")
@@ -59,7 +59,7 @@ class Correios():
         return [self._parse_linha_tabela(linha) for linha in linhas]
 
     def _parse_faixa(self, html):
-        if u"não está cadastrada" in html.decode('cp1252'):
+        if "não está cadastrada" in html.decode('cp1252'):
             return None
         ceps = re.findall('\d{5}-\d{3}', html)
         if len(ceps) == 4 or len(ceps) == 6: #uf (+ uf) + cidade com range
